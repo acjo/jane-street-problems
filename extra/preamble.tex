@@ -1,0 +1,162 @@
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{leftindex}
+% This package simply sets the margins to be 1 inch.
+\usepackage[margin=1in]{geometry}
+\usepackage{authblk}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{} % Clear all header and footer fields
+\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}}
+
+\usepackage{hyperref}
+\usepackage{braket}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=black,
+	filecolor=magenta,
+	urlcolor=cyan,
+	pdfpagemode=FullScreen,
+}
+\usepackage{mathrsfs}
+\usepackage{bbm}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{esint}
+% \usepackage[table, dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{subfiles}
+%\usepackage{pdfpages}
+\usepackage{algorithm2e}
+\RestyleAlgo{ruled}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{subfloat}
+%\usepackage{hyperre
+\usepackage{cleveref}
+\usepackage{pdfpages}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\pgfplotsset{compat=1.18}         %
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{arrows}
+\usetikzlibrary{math}
+\usetikzlibrary{patterns, snakes}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{angles,quotes}
+\usepackage{mdframed}
+\setkomafont{disposition}{\normalfont\bfseries}
+% Define an environment for exercises.
+\newenvironment{exercise}[1]{\vspace{.1in}\noindent\textbf{Exercise #1 \hspace{.05em}}}{}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+
+% define shortcut commands for commonly used symbols
+\DeclareMathOperator{\arcsec}{arcsec}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\BoundedOnV}[1]{\operatorname{\mathscr{B}}{\left(#1\right)}}
+\newcommand{\SetOfMetrics}{\operatorname{\mathscr{M}}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\n}{\mathscr{N}}
+\newcommand{\f}{\mathscr{F}}
+\newcommand{\rr}{\mathscr{R}}
+\newcommand{\cc}{\mathscr{C}}
+\newcommand{\one}{\mathbbm{1}}
+\newcommand{\project}[2]{\operatorname{proj}_{#1}{#2}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\setspan}{\operatorname{span}}
+\newcommand{\nullity}{\operatorname{nullity}}
+\newcommand{\nullspace}{\operatorname{\mathcal{N}}}
+\newcommand{\rowspace}{\operatorname{\mathcal{R}}}
+\newcommand{\skewsymmetric}[2]{\operatorname{Skew}_{#1}\left(#2\right)}
+\newcommand{\symmetric}[2]{\operatorname{Sym}_{#1}\left(#2\right)}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\ind}{\mbox{ind}}
+\newcommand{\sub}{\mbox{ subject to }}
+\newcommand{\adj}{\operatorname{adj}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\NAND}{\operatorname{NAND}}
+\newcommand{\XOR}{\operatorname{xor}}
+\newcommand{\range}{\operatorname{range}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\bm}[1]{\boldsymbol{#1}}
+\renewcommand{\Vec}[1]{\bm{#1}}
+\newcommand{\zero}{\Vec{0}}
+\newcommand{\NegBin}[2]{\operatorname{NegBin}\left(#1, #2\right)}
+\newcommand{\Bernoul}[1]{\operatorname{Bernoulli}\left(#1\right)}
+\newcommand{\Binom}[2]{\operatorname{Binomial}\left(#1, #2\right)}
+\newcommand{\Uniform}[2]{\operatorname{Uniform}\left(\left[#1, #2\right]\right)}
+\newcommand{\Norm}[2]{\mathscr{N}\left(#1, #2\right)}
+\newcommand{\Gamm}[2]{\operatorname{Gamma}\left(#1, #2\right)}
+\newcommand{\Supp}{\operatorname{supp}}
+\newcommand{\Beta}[2]{\operatorname{Beta}\left(#1, #2\right)}
+\newcommand{\KLD}{\mathbb{KL}}
+\newcommand{\HyperGeom}[3]{\operatorname{HyperGeom}\left(#1, #2, #3\right)}
+\newcommand{\Poisson}[1]{\operatorname{Poisson}\left(#1\right)}
+\newcommand{\StudT}[1]{\mathscr{T}\left(#1\right)}
+\newcommand{\Lagrange}{\mathcal{L}}
+\newcommand{\Lagrangian}{\mathscr{L}}
+\newcommand{\Bias}[1]{\operatorname{bias}\left(#1\right)}
+\newcommand{\MSE}{\operatorname{MSE}}
+\newcommand{\Hamilton}{\mathcal{H}}
+\newcommand{\Expo}[1]{\operatorname{Expo}\left(#1\right)}\newcommand{\Data}{\mathscr{D}}
+\newcommand{\MultiNom}[2]{\operatorname{MultiNomial}\left(#1, #2\right)}
+\newcommand{\Dirichlet}[1]{\operatorname{Dirichlet}\left(#1\right)}
+\newcommand{\BigO}[1]{\mathcal{O}\left(#1\right)}
+\newcommand{\X}{\mathbb{X}}
+\newcommand{\argmin}{\operatorname{argmin}}
+\newcommand{\argmax}{\operatorname{argmax}}
+\newcommand{\OLSE}{\hat{\Vec{\beta}}}
+\newcommand{\Boundary}{\partial \Omega}
+\newcommand{\Domain}{\Omega}
+\newcommand{\IRF}{\mathcal{S}_0}
+\newcommand{\NIRF}{\mathcal{S}}
+\newcommand{\Softmax}{\mathscr{S}}
+\newcommand{\Tensor}[1]{\widehat{\Vec{#1}}}
+\newcommand{\Laplace}[2]{\operatorname{Laplace}\left(#1, #2\right)}
+\newcommand{\Sigm}[1]{\operatorname{sigm}\left(#1\right)}
+\newcommand{\Classes}{\mathscr{Y}}
+\newcommand{\Vecc}[1]{\operatorname{vec}\left(#1\right)}
+\newcommand{\LinOp}{\mathscr{L}}
+\newcommand{\Real}{\mathfrak{R}}
+\newcommand{\SL}{\mathscr{L}}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\newcommand{\Do}[1]{\textbf{do}\left(#1\right)}
+\newcommand{\ARMA}[2]{\operatorname{ARMA}\left(#1, #2\right)}
+\DeclareMathOperator{\csch}{csch}
+\newcommand{\SNR}{\operatorname{SNR}}
+\newcommand{\DBSCAN}{\operatorname{DBSCAN}}
+\newcommand{\minPts}{\operatorname{minPts}}
+\newcommand{\sign}{\operatorname{sign}}
+\newcommand{\ARIMA}[3]{\operatorname{ARIMA}\left( #1, #2, #3\right)}
+\DeclareMathOperator{\Ima}{im}
+\newcommand{\AR}[1]{\operatorname{AR}\left(#1\right)}
+\newcommand{\MA}[1]{\operatorname{MA}\left(#1\right)}
+\newcommand{\Cat}[1]{\operatorname{Cat}\left(#1\right)}
+\newcommand{\len}{\operatorname{len}}
+\newcommand{\Res}{\operatorname{Res}}
+\newcommand{\LpT}[1]{\mathscr{L}\left[#1\right]}
+\newcommand{\ILpT}[1]{\mathscr{L}^{-1}\left[#1\right]}
+\newcommand{\Int}[1]{\operatorname{Int}{#1}}
+\newcommand{\Cl}[1]{\operatorname{CL}{#1}}
+\newcommand{\ip}[2]{\left\langle #1\,\right|\left. #2\right\rangle}
+\newcommand{\commutator}[2]{\left[\hat{#1},\,\hat{#2}\right]}
+\newcommand{\commutatorparentof}[4]{\left[\hat{#1}_{#2},\,\hat{#3}_{#4}\right]}
+\newcommand{\operator}[1]{\hat{#1}}
+\newcommand{\thermopartial}[3]{\left(\frac{\partial #1}{\partial #2}\right)_{#3}}
+\newcommand{\thermopartialtwo}[3]{\left(\frac{\partial^2 #1}{\partial #2^2}\right)_{#3}}

@@ -1,0 +1,296 @@
+---
+title: Jane Street July 2025
+author: Caelan Osman
+date: today
+format:
+  pdf:
+    toc: true
+    colorlinks: true
+    include-in-header: ../extra/preamble.tex
+    number-sections: true
+
+execute:
+    echo: false
+jupyter: python3
+---
+
+
+\newpage
+
+## Problem Statement
+
+::: {.callout-note icon=false}
+
+## Statement
+
+Robot cars have a top speed (which they prefer to maintain at all times while driving) that’s a real number randomly drawn uniformly between 1 and 2 miles per minute. 
+A two-lane highway for robot cars has a fast lane (with minimum speed $a$) and a slow lane (with maximum speed $a$). 
+When a faster car overtakes a slower car in the same lane, the slower car is required to decelerate to either change lanes (if both cars start in the fast lane) or stop on the shoulder (if both cars start in the slow lane). 
+Robot cars decelerate and accelerate at a constant rate of 1 mile per minute per minute, timed so the faster, overtaking car doesn’t have to change speed at all, and passing happens instantaneously. 
+If cars rarely meet (so you never have to consider a car meeting more than one other car on its trip, see Mathematical clarification below), and you want to minimize the miles not driven due to passing, what should a be set to, in miles per minute? Give your answer to 10 decimal places.
+\newline
+\newline
+Example car interactions: suppose $a$ is set to 1.2 miles per minute. If a car with top speed 1.8 overtakes a car with top speed 1.1, neither has to slow down because they are in different lanes. 
+If instead the car with top speed 1.8 overtakes one with top speed 1.7, the slower car computes the optimal time to start decelerating for 30 seconds (to reach 1.2 miles per minute to switch to the other lane) so the faster car instantly passes and the slower car can immediately start accelerating for another 30 seconds to return to 1.7 miles per minute. 
+This pass cost 0.25 miles (how far behind where the slower car would be if it continued at 1.7 miles per minute).
+\newline
+\newline
+If a car with top speed 1.1 overtakes one with top speed 1.0 in the slow lane, the slower (slowest!) car must decelerate for a full minute all the way to 0 to allow the pass, and then accelerate for a full minute to reestablish its speed, losing exactly 1 mile of distance.
+\newline
+\newline
+Assume all car trips are of constant length $N$, starting at arbitrary points and times along an infinitely long highway. 
+This is made more mathematically precise below.
+\newline
+\newline
+Mathematical clarification: Say car trips arrive at a rate of $z$ car trip beginnings per mile per minute, uniformly across the infinite highway (cars enter and exit their trips at their preferred speed due to on/off ramps), and car trips have a constant length of $N$ miles. Define $f(z,N)$ to be the value of a that minimizes the expected lost distance per car trip due to passing. Find:
+
+\begin{align*}
+  \lim_{N\to\infty}\left[\lim_{z\to 0+} f(z,N)\right]
+\end{align*}
+:::
+
+
+## Givens and Assumptions
+
+We start by listing our givens and the assumptions we can make based on the problem description
+
+1. The speeds of cars are drawn uniformly $S \sim \Uniform{1}{2}$. 
+   Where $S$ is a random variable representing the speed of the car. 
+2. The speed cars have in (1) are constant. Cars want to mantain this speed and only deviate if deceleration is happening due to a faster car in the same lane needing to pass. 
+3. The boundary speed $a$ creates the boundary between the slow and the fast lane. 
+   All cars in the fast lane are traveling at least as fast as $a$, $s \geq a$. 
+   All cars in the slow lane aren't traveling faster than $a$, $s \leq a$.
+4. If two cars are in the fast lane, and the car in back is the faster car, the slower car has to decelerate to speed $a$ to change lanes.
+5. If two cars are in the slow lane, and the car in back is the faster car, the slower car has to decelerate to $0$ speed and get in the shoulder. 
+6. All cars maintain their speed $s$ unless decelerating is occuring for a faster car to pass, or accelerating is occuring after a faster car passed in order for the slower car to return to speed $s$.
+7. Passes happen instantaneously, this is an important simplification of this problem, because this means that a car doesn't have to start decelerating early to avoid a collision.
+   Consider the following kinematic equations:
+   \begin{align}
+      &\Delta x= v_0t + \frac{1}{2}{at^2} \label{eq:1},\\
+      &\Delta v = at.\label{eq:2}
+   \end{align}
+  If $\Delta x$ describes the distance between the slowest and fastest car and $v_0 = s_{fast}-s_{slow}$ is the relative speed of the two cars then solving for $t$ with \cref{eq:1} will tell us the amount of time it takes the faster car to cover $\Delta x$ distance (i.e. arrive at the slower cars position).
+  \Cref{eq:2} on the other hand, would tell us the time for the slowest car to decelerate to the necessary speed to switch to the slower lane, or get in the shoulder. 
+  These times are not necessarily equivalent. 
+  Assuming the passing happens instantaneously avoids this time difference and makes the geometry of the problem simpler
+8. The acceleration/deceleration is a constant rate of $\ddot{x} = \pm 1\, \text{mile}/\text{min}^2$ respectively
+8. The "cost" of passing is the difference between the distances traveled by the slower car if it remained at a constant velocity and the distance traveled when it actually slowed down.
+9. The expression,
+   \begin{align*}
+      \lim_{z\to 0^+} f(z,N),
+   \end{align*}
+   implies that we don't need to worry about cars meeting multiple cars on its trip.
+10. $\lim_{N\to\infty}$ implies that we don't need to worry about a faster car running out of room. 
+     Meaning the length of the faster cars trip, will always be long enough such that passing a slower car in front of it will be possible. 
+11. We still have to worry about whether or not a faster car spawns in front of a slower car. 
+    A faster car can only pass a slower car, if the faster car spawns behind the slower car.
+12. We want to optimze the boundary speed $a$ to minimize the expected cost. 
+   \begin{align*}
+      a^* = \argmin_{a} \E[C]
+   \end{align*}
+   Where $C$ is a random variable representing the cost.
+
+
+## Calculating Cost of Passing
+Suppose there are two cars. 
+One traveling at speed $s_1$ is behind the second car traveling at speed $s_2$ where $s_1 > s_2$. 
+Note here the sub-index is the ordering of the car. 
+The 1st car will always be behind the second car. 
+In order for the fist car to pass the second car, the second car must decelerate to a speed $s_3$. 
+The time for the second car decelerate to a speed $s_3$ is given by the kinematic equation $\delta v = \ddot{x} t$
+\begin{align}
+  t_{d} = \frac{s_3 - s_2}{\ddot{x}}\label{eq:t-d}
+\end{align}
+The time for $c_2$ to accelerate back to the speed $s_2$ is,
+\begin{align}
+  t_{a} = \frac{s_2 - s_3}{\ddot{x}}\label{eq:t-a}
+\end{align}
+Note that in \cref{eq:t-d} we have $\ddot{x} = -1\, \text{miles}/\text{min}^2$ and in \cref{eq:t-a} we have that $\ddot{x} =1\, \text{miles}/\text{min}^2$.
+This gives the simplification that,
+\begin{align}
+  t_a = t_d = \frac{s_2-s_3}{1} = (s_2-s_3)\, \text{miles/min} \label{eq:t}
+\end{align}
+Now we need to consider how much distance the slower car could've traveled if it didn't have to decelerate. 
+This is simply given by the kinematic equation $\Delta x = s\Delta t$. 
+\begin{align}
+  \nonumber \Delta x_{0} &= s_2 \Delta t,\\
+  \nonumber&= s_2 (t_a + t_d),\\ 
+  \nonumber&= 2s_2 t_a,\\
+  &= 2 s_2 (s_2 - s_3)\label{eq:delta-x-max}
+\end{align}
+Now we have to find the distance traveled by the car as it was decelerating and then accelerating again,
+\begin{align}
+  \Delta x_1 = \Delta x_d + \Delta x_a \label{eq:delta-x-1-sum}
+\end{align}
+Where we can use the kinematic equation $\Delta x = s_0\Delta t + \frac{1}{2}\ddot{x} (\Delta t)^2$ where $s_0$ is the initial speed
+to find $\Delta x_d$ and $\Delta x_a$ which represent the change in position while decelerating and accelerating respectively.
+\begin{align}
+  \Delta x_d = s_2 t_d + \frac{1}{2} (-1) t_d^2 = s_2 t_a - \frac{1}{2} t_a^2 \label{eq:delta-x-d}
+\end{align}
+because we recall $t_d = t_a$.
+Similarly,
+\begin{align}
+  \Delta x_a = s_3 t_a + \frac{1}{2} (1) t_a^2 = s_3 t_a +  \frac{1}{2} t_a^2 \label{eq:delta-x-a}
+\end{align}
+Plugging \cref{eq:delta-x-d} and \cref{eq:delta-x-a} into \cref{eq:delta-x-1-sum} we get,
+\begin{align}
+  \nonumber \Delta x_1 &= s_2 t_a - \frac{1}{2} t_a^2 +  s_3 t_a +  \frac{1}{2} t_a^2,\\
+  \nonumber &= t_a(s_2 + s_3),\\
+  &= (s_2-s_3)(s_2 + s_3) \label{eq:delta-x-min}
+\end{align}
+Finding the difference between \cref{eq:delta-x-min} and \cref{eq:delta-x-max} we are able to calculate the cost $c$
+\begin{align}
+  \nonumber C &= \Delta x_0 - \Delta x_ 1,\\
+  \nonumber &= 2 s_2 (s_2 - s_3) - (s_2-s_3)(s_2 + s_3),\\
+  \nonumber &= 2 s_2^2 - 2s_3s_2 - s_2^2 + s_3^2,\\
+  \nonumber &= s_2^2 - 2s_3s_2 + s_3^2,\\
+  &= s_2^2 - s_3(2s_2 - s_3). \label{eq:cost}
+\end{align}
+If both cars are in the faster lane $s_3 = a$, if both cars are in the slower lane, $s_3 = 0$.
+\Cref{eq:cost} gives,
+\begin{align}
+  &c_{\text{fast}} = s_2^2 - a(2s_2 - a), \label{eq:cost-fast}\\
+  &c_{\text{slow}} = s_2^2, \label{eq:cost-slow}\\
+  &c_{\text{diff lanes}} = 0. \label{eq:cost-different-lanes}
+\end{align}
+
+Note that we use upper case, $C$ when referencing a random variable, and we use lower case, when we are referencing a specific realization/sample of a random variable (e.g. $S_1$ and $S_2$ have taken on values $s_1$ and $s_2$.)
+
+### Examples. 
+Using the examples given in the problem definition we can see that our cost calculation is correct. 
+
+1. If $s_1 = 1.8$ and $s_2=1.7$ and $a = 1.2$, then the two cars are in the faster lane and we have that
+$c = 1.7^2 - 1.2(2\cdot 1.7 - 1.2) = 0.25$ miles as expected.
+
+2. If $s_1 = 1.8$ and $s_2 = 1.1$ with $a=1.2$ then the cars are in different lanes and we have that $c=0$ as expected. 
+
+3. If $s_1 = 1.1$ and $s_2 = 1.0$ with $a=1.2$ then both cars are in the slower lane and we have that $c = 1$ mile as expected.
+
+## Expected cost.
+
+We will attempt first to use the law of total expectation where given a partition of events of the probability space $\{A_i\}_{i=1}^N$, we can calculate the expected cost as 
+\begin{align}
+\E[C] = \sum_{i}^N \E[C|A_i]P(A_i). \label{eq:lote}
+\end{align}
+We might try to partition the probability space in terms of the probabilities of certain interactions. 
+Consider the following partition. 
+\begin{enumerate}[label=(\roman*)]
+  \item \label{item:event-slow-lane-fast-car-behind} $s_1, s_2 < a$ with $s_1 > s_2$ (Both cars in the slow lane with the faster car behind),
+  \item \label{item:event-slow-lane-fast-car-front} $s_1, s_2 < a$ with $s_1 < s_2$  (Both cars in the slow lane with the faster car in front),
+  \item \label{item:event-fast-lane-fast-car-behind} $s_1, s_2 > a$ with $s_1 > s_2$  (Both cars in fast lane with the faster car behind),
+  \item \label{item:event-fast-lane-fast-car-front} $s_1, s_2 > a$ with $s_1 < s_2$ (Both cars in the fast lane with the faster car in front),
+  \item \label{item:diff-lane-1} $s_1 < a$ and $s_2 > a$ (The car behind in the slow lane and the car in front in the fast lane),
+  \item \label{item:diff-lane-2} $s_1 > a$ and $s_2 < a$ (The car behind in the fast lane and the car in front in the slow lane).
+\end{enumerate}
+
+Note that from our event partition above \cref{item:event-slow-lane-fast-car-front}, \cref{item:event-fast-lane-fast-car-front}, \cref{item:diff-lane-1}, and \cref{item:diff-lane-2} will all have zero 
+conditional expected cost. 
+This is because each of thes situations fall into the category of cars being in different lanes, so no slow-downs are required and/or no passing will happen giving a conditional expected cost of 0. 
+Or the fast car is already in front of the slow car in the same lane so no passing will happen. Again, giving an expected cost of 0. 
+These events will not contribute to the overal expected value calculation as given in \cref{eq:lote}.
+
+### Conditional Expectations
+
+Now, we calculate the remaining conditional expectations for \cref{item:event-slow-lane-fast-car-behind} and \cref{item:event-fast-lane-fast-car-behind}:
+\begin{enumerate}
+
+\item \label{item:slow-lane-fast-car-behind} The event that both cars are in the slow lane with the faster car behind the slower car leads to a well defined cost.
+  By the definition of conditional expectation,
+   \begin{align*}
+     \E[C| S_1 < a, \, S_2 < a, \,S_2 < S_1] = \E[C| S_1 < a,\, S_2 < S_1 < a]
+   \end{align*}
+   Note that $S_2 \sim \Uniform{1}{2}$.
+   By the law of the unconcious statastician we have that,
+   \begin{align}
+      \nonumber E[S_2^2] &= \int_{s_2}s_2^2 f_{S_2}(s_2)\, ds_2,\\ 
+      \nonumber&= \int_1^2 s_2^2 \cdot \frac{1}{1-2}\, ds_2,\\
+      \nonumber&= \int_1^2 s^2 \,ds_2,\\
+      \nonumber&= \left.\frac{1}{3}s^3\right|_1^2,\\
+      \nonumber&= \frac{1}{3}(8-1),\\
+      & = \frac73 \approx 2.33. \label{eq:E-S2-square}
+   \end{align}
+   This makes sense as the square term will concentrate the values more near the right end of the domain $[1,2]$. 
+   Which gives,
+   \begin{align}
+    \E[C|\text{slow}] = \frac73 \label{eq:expected-cost-slow-lane-fast-car-behind}.
+   \end{align}
+   Note that,
+   \begin{align}
+     \E[s_2] = \int_1^2 s_2 ds_2 = \frac{3}{2} = 1.5, \label{eq:E-S2}
+   \end{align}
+   as one would expect. 
+
+\item \label{item:fast-lane-fast-car-behind} The event that both cars are in the fast lane with the faster car behind the slower car initially. 
+   Which leads to a well defined expected cost of
+   \begin{align*}
+     \E[C|\text{fast}] &= \E[C_{\text{fast}}]\\
+     &= \E[s_2^2 -a(2s_2 - a)],\\
+     &= \E[s_2^2] -2a \E[s_2] + a^2 
+   \end{align*}
+   Where we use the fact that the expected value operator is linear.
+   Using \cref{eq:E-S2-square} and \cref{eq:E-S2}.
+   \begin{align}
+     \E[C|\text{fast}] = \frac{7}{3} - 3a + a^2. \label{eq:expected-cost-fast-lane-fast-car-behind}
+   \end{align}
+
+\item The event that both cars are in the fast lane with the faster car in front of the slower car initially.
+   Will this will have an expected cost of $0$ since the front car wil never hav to pass the slower car. 
+   Therefore it won't contribute to $\E[C]$.
+
+\item The event that both cars are in the slow lane with the faster car in front of the slower car initially.
+   This as well will have an expected cost of $0$ since the front car wil never hav to pass the slower car. 
+   Therefore it won't contribute to $\E[C]$.
+
+\end{enumerate}
+
+### Probabilities. 
+We now need to find the probabilities of the relevant events that partition or probability space. 
+In particular we need to compute the probabilities of \cref{item:event-slow-lane-fast-car-behind} and \cref{item:event-fast-lane-fast-car-behind}.
+Again, no need to compute the probabilities of the other 4 events as the conditional expected cost means they won't contribute to $\E[C]$ anyway.
+
+\begin{enumerate}
+  \item We compute the probability that both cars are in the slow lane where c the fast car is behind the slow car and the car behind is faster than the car ahead,
+  Using the definition of conditional probability,
+  \begin{align*}
+    P(S_1 < a, \, S_2 < a, S_2 < S_1) &= P(S_1 < a, \, S_2 < S_1 < a),\\
+    &= P(S_1 < a, \, S_2 < S_1).
+  \end{align*}
+  Where we use the fact that because $S_1 < a$ and $S_2 < a$ and $S_1 < S_2$ implies that $S_2 < S_1$.
+  Computing the conditional probability,
+  \begin{align*}
+    P(S_1 < a, \, S_2 < S_1) &= \int_1^a\int_1^{s_1} f_{S_1}(s_1) f_{S_2}(s_2)\, ds_2 ds_1,\\
+    &= \int_1^a\int_1^{s_1} \left(\frac{1}{2-1}\right)^2 \, ds_2 ds_1,\\
+    &= \int_1^a\int_1^{s_1} \, ds_2 ds_1,\\
+    &= \int_1^a (s_1 - 1) \, d_{s_{1}},\\
+    &= \frac12 \left.(s_1 - 1)^2\right|_1^a\\
+  \end{align*}
+  Evaluating this expression yields,
+  \begin{align}
+    P(S_1 < a\, S_2 < a, \, S_2 < S_1) &= \frac12 (a - 1)^2\label{eq:probability-slow-lane-fast-car-behind}
+  \end{align}
+  \item We compute the probability that both cars are in the fast lane where the fast car is behind the slow car. 
+  \begin{align*}
+    P(S_1 >a, \, S_2 > a,\, S_2 < S_1) &= P(a < S_1,\, a < S_2 < S_1).
+  \end{align*}
+  Computing this,
+  \begin{align*}
+    P(a < S_1, \, a < S_2 < S_1) &= \int_{a}^{2} \int_{a}^{s_1} f_{S_1}(s_1) f_{S_2}(s_2) ds_2 ds_1,\\
+    &= \int_{a}^{2} \int_{a}^{s_1}  ds_2 ds_1,\\
+    &= \int_{a}^{2} (s_1 - a) ds_1,\\
+    &= \frac{1}{2} \left.(s_1 - a)^2\right|_{a}^{2} ,\\
+  \end{align*}
+  Evaluating this we get,
+  \begin{align}
+    P(S_1 >a, \, S_2 > a, \,S_2 < S_1) &= \frac{1}{2} (2 - a)^2. \label{eq:probability-fast-lane-fast-car-behind}
+  \end{align}
+\end{enumerate}
+
+### Expected Cost Functional Form.
+
+The final form using \cref{eq:lote}, \cref{eq:expected-cost-slow-lane-fast-car-behind}, \cref{eq:expected-cost-fast-lane-fast-car-behind}, \cref{eq:probability-slow-lane-fast-car-behind}, and \cref{eq:probability-fast-lane-fast-car-behind} gives us the functional form of the expectation as,
+\begin{align*}
+  \E[C] = \frac73\cdot  \frac12 (a-1)^2 + \left(\frac73 -3a + a^2\right) \cdot  \frac12 (2-a)^2 
+\end{align*}
+
+
+

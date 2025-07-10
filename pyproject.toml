@@ -1,0 +1,10 @@
+[project]
+name = "jane-street-problems"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "quarto>=0.1.0",
+    "sympy>=1.14.0",
+]
