@@ -9,7 +9,8 @@ def _():
     import marimo as mo
     import sympy as sy
     import numpy as np
-    return mo, np
+
+    return mo, np, sy
 
 
 @app.cell
@@ -56,7 +57,6 @@ def _(mo, np):
         analytic = m(a)
 
         return simulated, analytic
-
 
     simulated, analytic = slow_lane_expected_value(1.5, 100_000_000)
 
@@ -118,7 +118,6 @@ def _(mo, np):
 
         return simulated, analytic
 
-
     simulated_fast, analytic_fast = fast_lane_expected_value(1.5, 100_000_000)
 
     mo.md(f"""
@@ -131,6 +130,97 @@ def _(mo, np):
     error: {np.abs(analytic_fast-simulated_fast)/analytic_fast}
 
     """)
+    return
+
+
+@app.cell
+def _(mo, np, sols):
+    def expected_value_full_verification(a, l):
+        def cost(s1, s2, a) -> float:
+            if s1 < a and s2 < a and s2 < s1:
+                return s2**2
+            elif s1 > a and s2 > a and s2 < s1:
+                return s2**2 - a * (2 * s2 - a)
+            else:
+                return 0
+
+        s1 = np.random.uniform(1, 2, l)
+        s2 = np.random.uniform(1, 2, l)
+
+        c = np.array([cost(one, two, a) for one, two in zip(s1, s2)])
+
+        simulated = np.mean(c)
+
+        m = lambda a: (2 * a**4 - 8 * a**3 + 24 * a**2 - 36 * a + 19) / 12
+
+        analytic = m(a)
+
+        return simulated, analytic
+
+    simulated_full, analytic_full = expected_value_full_verification(
+        float(sols[2]), 100_000_000
+    )
+
+    mo.md(f"""
+    # Full Expected Cost Calculation
+
+    Simulted value is: {simulated_full:.8f}
+
+    analytic value is: {analytic_full: .8f}
+
+    error: {np.abs(analytic_full-simulated_full)/analytic_full}
+
+    """)
+    return
+
+
+@app.cell
+def _(mo, sy):
+    a = sy.symbols("a", real=True)
+    E = sy.Rational(1, 12) * (2 * a**4 - 8 * a**3 + 24 * a**2 - 36 * a + 19)
+
+    dEda = E.diff(a)
+
+    sols = sy.solve(sy.Eq(0, dEda), a)
+
+    mo.md(f"""
+    {complex(sols[0])}
+
+    {complex(sols[1])}
+
+    {complex(sols[2])}
+    """)
+    return E, a, dEda, sols
+
+
+@app.cell
+def _(a, dEda):
+    d2Eda2 = dEda.diff(a)
+    return
+
+
+@app.cell
+def _(E, a, np, sols):
+    from matplotlib import pyplot as plt
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    a_space = np.linspace(1, 2, 1000)
+    ax.plot(a_space, [E.subs({a: a_val}) for a_val in a_space])
+    ax.scatter([sols[2]], [E.subs({a: sols[2]})], color="red", s=20)
+    fig
+    return
+
+
+@app.cell
+def _(sols):
+    f"{float(sols[2]):.10f}"
+    return
+
+
+@app.cell
+def _(sols):
+    float(sols[2])
     return
 
 

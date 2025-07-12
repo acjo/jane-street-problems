@@ -84,6 +84,7 @@ We start by listing our givens and the assumptions we can make based on the prob
      Meaning the length of the faster cars trip, will always be long enough such that passing a slower car in front of it will be possible. 
 11. We still have to worry about whether or not a faster car spawns in front of a slower car. 
     A faster car can only pass a slower car, if the faster car spawns behind the slower car.
+    But as we will see below, this leads to $0$ conditional expected cost \label{eq:cost-slow-behind-fast}.
 12. We want to optimze the boundary speed $a$ to minimize the expected cost. 
    \begin{align*}
       a^* = \argmin_{a} \E[C]
@@ -148,11 +149,12 @@ Finding the difference between \cref{eq:delta-x-min} and \cref{eq:delta-x-max} w
 \end{align}
 If both cars are in the faster lane $s_3 = a$, if both cars are in the slower lane, $s_3 = 0$.
 \Cref{eq:cost} gives,
-\begin{align}
-  &c_{\text{fast}} = s_2^2 - a(2s_2 - a), \label{eq:cost-fast}\\
-  &c_{\text{slow}} = s_2^2, \label{eq:cost-slow}\\
-  &c_{\text{diff lanes}} = 0. \label{eq:cost-different-lanes}
-\end{align}
+\begin{alignat}{2}
+  &c_{\text{fast}} &&= s_2^2 - a(2s_2 - a), \label{eq:cost-fast}\\
+  &c_{\text{slow}} &&= s_2^2, \label{eq:cost-slow}\\
+  &c_{\text{diff lanes}} &&= 0. \label{eq:cost-different-lanes},\\
+  &c_{\text{slow behind fast}} &&= 0. \label{eq:cost-slow-behind-fast}
+\end{alignat}
 
 Note that we use upper case, $C$ when referencing a random variable, and we use lower case, when we are referencing a specific realization/sample of a random variable (e.g. $S_1$ and $S_2$ have taken on values $s_1$ and $s_2$.)
 
@@ -170,95 +172,44 @@ $c = 1.7^2 - 1.2(2\cdot 1.7 - 1.2) = 0.25$ miles as expected.
 
 We will attempt first to use the law of total expectation where given a partition of events of the probability space $\{A_i\}_{i=1}^N$, we can calculate the expected cost as 
 \begin{align}
-\E[C] = \sum_{i}^N \E[C|A_i]P(A_i). \label{eq:lote}
+  \E[C] = \sum_{i}^N \E[C|A_i]P(A_i). \label{eq:lote}
 \end{align}
 We might try to partition the probability space in terms of the probabilities of certain interactions. 
 Consider the following partition. 
 \begin{enumerate}[label=(\roman*)]
-  \item \label{item:event-slow-lane-fast-car-behind} $s_1, s_2 < a$ with $s_1 > s_2$ (Both cars in the slow lane with the faster car behind),
-  \item \label{item:event-slow-lane-fast-car-front} $s_1, s_2 < a$ with $s_1 < s_2$  (Both cars in the slow lane with the faster car in front),
-  \item \label{item:event-fast-lane-fast-car-behind} $s_1, s_2 > a$ with $s_1 > s_2$  (Both cars in fast lane with the faster car behind),
-  \item \label{item:event-fast-lane-fast-car-front} $s_1, s_2 > a$ with $s_1 < s_2$ (Both cars in the fast lane with the faster car in front),
-  \item \label{item:diff-lane-1} $s_1 < a$ and $s_2 > a$ (The car behind in the slow lane and the car in front in the fast lane),
-  \item \label{item:diff-lane-2} $s_1 > a$ and $s_2 < a$ (The car behind in the fast lane and the car in front in the slow lane).
+\item \label{item:event-slow-lane-fast-car-behind} $A_1$: $s_1, s_2 < a$ with $s_1 > s_2$ (Both cars in the slow lane with the faster car behind),
+  \item \label{item:event-slow-lane-fast-car-front} $A_2$: $s_1, s_2 < a$ with $s_1 < s_2$  (Both cars in the slow lane with the faster car in front),
+  \item \label{item:event-fast-lane-fast-car-behind}$A_3$: $s_1, s_2 > a$ with $s_1 > s_2$  (Both cars in fast lane with the faster car behind),
+  \item \label{item:event-fast-lane-fast-car-front} $A_4$: $s_1, s_2 > a$ with $s_1 < s_2$ (Both cars in the fast lane with the faster car in front),
+  \item \label{item:diff-lane-1}$A_5$: $s_1 < a$ and $s_2 > a$ (The car behind in the slow lane and the car in front in the fast lane),
+  \item \label{item:diff-lane-2}$A_6$: $s_1 > a$ and $s_2 < a$ (The car behind in the fast lane and the car in front in the slow lane).
 \end{enumerate}
 
-Note that from our event partition above \cref{item:event-slow-lane-fast-car-front}, \cref{item:event-fast-lane-fast-car-front}, \cref{item:diff-lane-1}, and \cref{item:diff-lane-2} will all have zero 
-conditional expected cost. 
-This is because each of thes situations fall into the category of cars being in different lanes, so no slow-downs are required and/or no passing will happen giving a conditional expected cost of 0. 
-Or the fast car is already in front of the slow car in the same lane so no passing will happen. Again, giving an expected cost of 0. 
-These events will not contribute to the overal expected value calculation as given in \cref{eq:lote}.
+Note that from our event partition above \cref{item:event-slow-lane-fast-car-front}, \cref{item:event-fast-lane-fast-car-front}, \cref{item:diff-lane-1}, and \cref{item:diff-lane-2} will all have $E[C|A_i] = 0$. 
+This is because each of these situations fall into the category of cars being in different lanes, so no slow-downs are required and/or no passing will happen or the fast car is already in front of the slow car in the same lane so no passing will happen giving $E[C|A_i] = 0$. 
 
-### Conditional Expectations
+You can see this is exactly what we calculated in \cref{eq:cost-different-lanes} and \cref{eq:cost-slow-behind-fast}.
+These events will not contribute to the overal expected value calculation as given in \cref{eq:lote} reducing the expected value calculation to,
+\begin{align}
+  \E[C] = P(A_1) \E[C|A_1] + \E[C|A_2] P(A_2) \label{eq:lote-final}
+\end{align}
 
-Now, we calculate the remaining conditional expectations for \cref{item:event-slow-lane-fast-car-behind} and \cref{item:event-fast-lane-fast-car-behind}:
-\begin{enumerate}
+### Probabilities {#sec-probabilities} 
 
-\item \label{item:slow-lane-fast-car-behind} The event that both cars are in the slow lane with the faster car behind the slower car leads to a well defined cost.
-  By the definition of conditional expectation,
-   \begin{align*}
-     \E[C| S_1 < a, \, S_2 < a, \,S_2 < S_1] = \E[C| S_1 < a,\, S_2 < S_1 < a]
-   \end{align*}
-   Note that $S_2 \sim \Uniform{1}{2}$.
-   By the law of the unconcious statastician we have that,
-   \begin{align}
-      \nonumber E[S_2^2] &= \int_{s_2}s_2^2 f_{S_2}(s_2)\, ds_2,\\ 
-      \nonumber&= \int_1^2 s_2^2 \cdot \frac{1}{1-2}\, ds_2,\\
-      \nonumber&= \int_1^2 s^2 \,ds_2,\\
-      \nonumber&= \left.\frac{1}{3}s^3\right|_1^2,\\
-      \nonumber&= \frac{1}{3}(8-1),\\
-      & = \frac73 \approx 2.33. \label{eq:E-S2-square}
-   \end{align}
-   This makes sense as the square term will concentrate the values more near the right end of the domain $[1,2]$. 
-   Which gives,
-   \begin{align}
-    \E[C|\text{slow}] = \frac73 \label{eq:expected-cost-slow-lane-fast-car-behind}.
-   \end{align}
-   Note that,
-   \begin{align}
-     \E[s_2] = \int_1^2 s_2 ds_2 = \frac{3}{2} = 1.5, \label{eq:E-S2}
-   \end{align}
-   as one would expect. 
-
-\item \label{item:fast-lane-fast-car-behind} The event that both cars are in the fast lane with the faster car behind the slower car initially. 
-   Which leads to a well defined expected cost of
-   \begin{align*}
-     \E[C|\text{fast}] &= \E[C_{\text{fast}}]\\
-     &= \E[s_2^2 -a(2s_2 - a)],\\
-     &= \E[s_2^2] -2a \E[s_2] + a^2 
-   \end{align*}
-   Where we use the fact that the expected value operator is linear.
-   Using \cref{eq:E-S2-square} and \cref{eq:E-S2}.
-   \begin{align}
-     \E[C|\text{fast}] = \frac{7}{3} - 3a + a^2. \label{eq:expected-cost-fast-lane-fast-car-behind}
-   \end{align}
-
-\item The event that both cars are in the fast lane with the faster car in front of the slower car initially.
-   Will this will have an expected cost of $0$ since the front car wil never hav to pass the slower car. 
-   Therefore it won't contribute to $\E[C]$.
-
-\item The event that both cars are in the slow lane with the faster car in front of the slower car initially.
-   This as well will have an expected cost of $0$ since the front car wil never hav to pass the slower car. 
-   Therefore it won't contribute to $\E[C]$.
-
-\end{enumerate}
-
-### Probabilities. 
-We now need to find the probabilities of the relevant events that partition or probability space. 
+We now need to find the probabilities of the relevant events that partition or probability space so that we can compute the expected value as in \cref{eq:lote-final}
 In particular we need to compute the probabilities of \cref{item:event-slow-lane-fast-car-behind} and \cref{item:event-fast-lane-fast-car-behind}.
-Again, no need to compute the probabilities of the other 4 events as the conditional expected cost means they won't contribute to $\E[C]$ anyway.
 
-\begin{enumerate}
-  \item We compute the probability that both cars are in the slow lane where c the fast car is behind the slow car and the car behind is faster than the car ahead,
+1. We compute the probability that both cars are in the slow lane where c the fast car is behind the slow car and the car behind is faster than the car ahead,
   Using the definition of conditional probability,
   \begin{align*}
-    P(S_1 < a, \, S_2 < a, S_2 < S_1) &= P(S_1 < a, \, S_2 < S_1 < a),\\
-    &= P(S_1 < a, \, S_2 < S_1).
+    P(A_1) &= P(S_1 < a, \, S_2 < a, S_2 < S_1),\\
+    &= P(S_1 < a, \, S_2 < S_1 < a),\\
+    &= P(1 < S_2 < S_1 < a).
   \end{align*}
   Where we use the fact that because $S_1 < a$ and $S_2 < a$ and $S_1 < S_2$ implies that $S_2 < S_1$.
   Computing the conditional probability,
   \begin{align*}
-    P(S_1 < a, \, S_2 < S_1) &= \int_1^a\int_1^{s_1} f_{S_1}(s_1) f_{S_2}(s_2)\, ds_2 ds_1,\\
+    P(1 < S_2 < S_1 < a) &= \int_1^a\int_1^{s_1} f_{S_1}(s_1) f_{S_2}(s_2)\, ds_2 ds_1,\\
     &= \int_1^a\int_1^{s_1} \left(\frac{1}{2-1}\right)^2 \, ds_2 ds_1,\\
     &= \int_1^a\int_1^{s_1} \, ds_2 ds_1,\\
     &= \int_1^a (s_1 - 1) \, d_{s_{1}},\\
@@ -266,31 +217,254 @@ Again, no need to compute the probabilities of the other 4 events as the conditi
   \end{align*}
   Evaluating this expression yields,
   \begin{align}
-    P(S_1 < a\, S_2 < a, \, S_2 < S_1) &= \frac12 (a - 1)^2\label{eq:probability-slow-lane-fast-car-behind}
+    P(A_1)  &= \frac12 (a - 1)^2\label{eq:probability-slow-lane-fast-car-behind}
   \end{align}
-  \item We compute the probability that both cars are in the fast lane where the fast car is behind the slow car. 
+
+2. We compute the probability that both cars are in the fast lane where the fast car is behind the slow car. 
   \begin{align*}
-    P(S_1 >a, \, S_2 > a,\, S_2 < S_1) &= P(a < S_1,\, a < S_2 < S_1).
+    P(A_2) &= P(S_1 >a, \, S_2 > a,\, S_2 < S_1),\\ 
+    &= P(a < S_1,\, a < S_2 < S_1),\\
+     &= P(a < S_2 < S_1 < 2).
   \end{align*}
   Computing this,
   \begin{align*}
-    P(a < S_1, \, a < S_2 < S_1) &= \int_{a}^{2} \int_{a}^{s_1} f_{S_1}(s_1) f_{S_2}(s_2) ds_2 ds_1,\\
+    P(a < S_2 < S_1 < 2) &= \int_{a}^{2} \int_{a}^{s_1} f_{S_1}(s_1) f_{S_2}(s_2) ds_2 ds_1,\\
     &= \int_{a}^{2} \int_{a}^{s_1}  ds_2 ds_1,\\
     &= \int_{a}^{2} (s_1 - a) ds_1,\\
     &= \frac{1}{2} \left.(s_1 - a)^2\right|_{a}^{2} ,\\
   \end{align*}
   Evaluating this we get,
   \begin{align}
-    P(S_1 >a, \, S_2 > a, \,S_2 < S_1) &= \frac{1}{2} (2 - a)^2. \label{eq:probability-fast-lane-fast-car-behind}
+    P(A_2)  &= \frac{1}{2} (2 - a)^2. \label{eq:probability-fast-lane-fast-car-behind}
   \end{align}
-\end{enumerate}
+
+### Conditional Expectations
+
+Now, we calculate the remaining conditional expectations for $A_1$ and $A_2$ using the definition of conditional expectation,
+\begin{align}
+  \E[C|A] = \E[c(S_1,S_2)| A] = \frac{\iint_{A} c(s_1,s_2) f_{S_{1}\, S_{2}}(s_1, s_2) \, ds_2 ds_1}{\iint_{A} f_{S_{1}\, S_{2}}(s_1, s_2) \, ds_2 ds_1}\label{eq:general-conditional-expectation-formula}
+\end{align}
+Where $c$ is the cost function described in \cref{eq:cost-fast}-\cref{eq:cost-slow-behind-fast}. 
+Because $S_1$ and $S_2$ are i.i.d. and uniformly distributed on $[1,2]$, we have that,
+\begin{align*}
+  f_{S_{1}\, S_{2}}(s_1, s_2) = f_{S_{1}}(s_1)\cdot f_{S_{2}}(s_2) = 1 \cdot 1 =1 
+\end{align*}
+So the form of \label{eq:general-conditional-expectation-formula} that we need to use for our specific problem is:
+\begin{align}
+  \E[C|A] = \E[c(S_1,S_2)| A] = \frac{\iint_{A} c(s_1,s_2)  \, ds_2 ds_1}{\iint_{A} \, ds_2 ds_1}\label{eq:conditional-expectation-formula}
+\end{align}
+We have already calculated the denominator for both events $A_1$ and $A_2$ in \cref{eq:probability-slow-lane-fast-car-behind} and \cref{eq:probability-fast-lane-fast-car-behind} respectively.
+
+1. Calculating the numerator we need for $A_1$ we get,
+```{python}
+ #| echo: false
+ import sympy as sy
+ from IPython.display import Markdown
+
+ s1,s2,a = sy.symbols("s_1,s_2,a", real=True)
+ c_func = s2**2
+ I = sy.integrate(sy.integrate(c_func, (s2, 1, s1)), (s1, 1, a))
+ numerator_expression = r"\iint_{A_1} c(s_1,s_2)  \, ds_2 ds_1"
+ align_begin = r"\begin{align}"
+ align_end = r"\label{eq:numerator-conditional-expectation-A1}\end{align}"
+ I_txt = rf"{align_begin} {numerator_expression} = {sy.latex(I)} = {sy.latex(sy.factor(I))} {align_end}"
+ display(Markdown(I_txt))
+```
+  Combining \cref{eq:numerator-conditional-expectation-A1} with \cref{eq:probability-slow-lane-fast-car-behind} we get that,
+```{python}
+ #| echo: false
+ import sympy as sy
+ from IPython.display import Markdown
+
+ align_begin = r"\begin{align}"
+ align_end = r"\label{eq:conditional-expectation-A1}\end{align}"
+
+ I_txt = rf"{align_begin} \E[C|A_1] = {sy.latex(sy.simplify(sy.factor(I) /(sy.Rational(1,2)*(a-1)**2 )))} {align_end}"
+ display(Markdown(I_txt))
+```
+
+2. Calculating the numerator for $A_2$ and using \cref{eq:cost-fast} we get,
+
+```{python}
+ #| echo: false
+ import sympy as sy
+ from IPython.display import Markdown
+
+ s1,s2,a = sy.symbols("s_1,s_2,a", real=True)
+ c_func_fast = s2**2 - 2*a*s2 - a**2
+ I = sy.integrate(sy.integrate(c_func_fast, (s2, a, s1)), (s1, a, 2))
+ numerator_expression = r"\nonumber \iint_{A_{2}} c(s_1,s_2)  \, ds_2 ds_1 &= \int_{a}^{2} \int_{a}^{s_1} s_2^2 - 2as_2 - a^2 \, ds_2 ds_1,\\ "
+ align_begin = r"\begin{align}"
+ align_end = r"\label{eq:numerator-conditional-expectation-A2}\end{align}"
+ I_txt = rf"{align_begin} {numerator_expression} &= \nonumber {sy.latex(I)},\\ &= {sy.latex(sy.factor(I))} {align_end}"
+ display(Markdown(I_txt))
+```
+Combining \cref{eq:numerator-conditional-expectation-A2} with \cref{eq:probability-fast-lane-fast-car-behind} we get that,
+```{python}
+ #| echo: false
+ import sympy as sy
+ from IPython.display import Markdown
+
+ s1,s2,a = sy.symbols("s_1,s_2,a", real=True)
+ c_func_fast = s2**2 - 2*a*s2 + a**2
+ I = sy.integrate(sy.integrate(c_func_fast, (s2, a, s1)), (s1, a, 2))
+ align_begin = r"\begin{align}"
+ align_end = r"\label{eq:conditional-expectation-A2}\end{align}"
+ I_txt = rf"{align_begin}  \E[C|A_2] &= {sy.latex(sy.factor(sy.simplify(sy.factor(I) / (sy.Rational(1,2) * (2-a)**2))))} {align_end}"
+ display(Markdown(I_txt))
+```
 
 ### Expected Cost Functional Form.
 
-The final form using \cref{eq:lote}, \cref{eq:expected-cost-slow-lane-fast-car-behind}, \cref{eq:expected-cost-fast-lane-fast-car-behind}, \cref{eq:probability-slow-lane-fast-car-behind}, and \cref{eq:probability-fast-lane-fast-car-behind} gives us the functional form of the expectation as,
+The final form using \cref{eq:lote-final}, \cref{eq:probability-slow-lane-fast-car-behind}, \cref{eq:probability-fast-lane-fast-car-behind}, \cref{eq:conditional-expectation-A1}, and \cref{eq:numerator-conditional-expectation-A2} we get that,
+
+```{python}
+#| echo: false
+import sympy as sy
+
+sy.symbols("a", real=True)
+
+
+P_A_1 = sy.Rational(1,2) * (a-1)**2
+E_C_A_1 = sy.Rational(1,6)* (a**2 + 2*a +  3)
+P_A_2 = sy.Rational(1,2) * (2-a)**2
+E_C_A_2 = sy.Rational(1,6) * (a-2)**2
+
+E =P_A_1*  E_C_A_1 + P_A_2 * E_C_A_2 
+
+align_end = r"\end{align}"
+
+Markdown(rf"""{align_begin}
+\nonumber E[C] &= P(A_1) \E[C|A_1] + P(A_2) \E[C|A_2],\\
+\nonumber &= {sy.latex(E)}, \\
+&= {sy.latex(sy.factor(E))} \label{{eq:expected-cost-final}}
+{align_end}""")
+```
+
+
+## Optimization
+
+
+All we need to do now is find the $a$ that optimizes the cost that we found in \cref{eq:expected-cost-final}. 
+To do this we differentiate the cost with respect to $a$, find the values of $a$ that make the derivative zero, and then take the second derivative to find which of the roots are actuall minimizers. 
+Note from the fundamental theorem of algebra we know that there will be 3 options for optimizers of the cost, so we will have 3 candidate solutions to verify with the second derivative.
+Minimizers will have a positive second derivative when evaluated at the candidate solution.
+
+The first derivative is,
 \begin{align*}
-  \E[C] = \frac73\cdot  \frac12 (a-1)^2 + \left(\frac73 -3a + a^2\right) \cdot  \frac12 (2-a)^2 
+  \frac{d}{da}\E[C] = \frac{1}{12}\left[8a^3 - 24a^2 + 48a - 36\right] = \frac{2}{3}a^3 - 2a^2 + 4a - 3
 \end{align*}
 
+Setting this equal to zero and solving we get the following solutions,
+
+```{python}
+#| echo : false
+
+a = sy.symbols("a", real=True)
+E = sy.Rational(1, 12) * (2 * a**4 - 8 * a**3 + 24 * a**2 - 36 * a + 19)
+
+dEda = E.diff(a)
 
 
+sols = sy.solve(sy.Eq(0, dEda), a)
+
+align_begin = r"\begin{align}"
+align_end = r"\end{align}"
+Markdown(
+rf"""
+{align_begin}
+a_0 &= {sy.latex(sols[0])} \label{{eq:candidate-0}},\\
+a_1 &= {sy.latex(sols[1])} \label{{eq:candidate-1}},\\
+a_2 &= {sy.latex(sols[2])} \label{{eq:candidate-2}}
+{align_end}
+"""
+)
+```
+
+Note that both \cref{eq:candidate-0} and \cref{eq:candidate-1} are complex numbers (note the $i = \sqrt{-1}$).
+This phyiscally would not make sens for our situtation. 
+So the only option for an optimizer is \cref{eq:candidate-2}. 
+We can verify this with the second derivative
+
+```{python}
+#| echo : false
+
+a = sy.symbols("a", real=True)
+E = sy.Rational(1, 12) * (2 * a**4 - 8 * a**3 + 24 * a**2 - 36 * a + 19)
+
+d2Eda2 = dEda.diff(a)
+
+Markdown(
+rf"""
+{align_begin}
+\frac{{d^2 E}}{{da^2}} &= {sy.latex(d2Eda2)}\nonumber
+{align_end}
+"""
+)
+```
+Evaluating $\frac{d^2 \E[C]}{da^2}$ at the candidate solution given by \cref{eq:candidate-2} gives us,
+
+```{python}
+#| echo : false
+
+d2Eda2 = dEda.diff(a)
+
+evaluated = sy.simplify(d2Eda2.subs({a:sols[2]}))
+
+Markdown(
+rf"""
+{align_begin}
+\left. \frac{{d^2 E}}{{da^2}}\right|_{{a = a_0}} &= {sy.latex(evaluated)} \approx {float(evaluated):.11f} \label{{eq:2nd-derivative-eval}} 
+{align_end}
+"""
+)
+```
+Thus we have that \cref{eq:candidate-0} is our minimzer!
+Plugging this into \cref{eq:expected-cost-final} will give us the final value for the minimium expected cost given that we chose \cref{eq:candidate-0} as the demarcation speed between lanes,
+
+```{python}
+#| echo : false
+
+A_optimal = sols[2]
+E_optimal = sy.simplify(E.subs({a:sols[2]}))
+
+out_1 = rf"""
+{align_begin}
+\boxed{{
+  a = {sy.latex(sols[2])} \approx {float(sols[2]):.10f}
+}}
+{align_end}
+"""
+
+small_begin_align = r"\scriptsize \begin{align}"
+small_end_align = r"\end{align}"
+
+out_2 = rf"""
+{small_begin_align}
+\E^*[C] &= {sy.latex(E_optimal)},\\ 
+&\approx {float(E_optimal)}
+{small_end_align}
+"""
+Markdown(out_1 + out_2)
+```
+
+We can verify graphically that our optimial solution is actually optimal. @Fig-expected-cost plots the expected cost $\E[C]$ over the range of values $a\in[1,2]$.  
+
+```{python}
+#| echo: false
+#| label: Fig-expected-cost
+#| fig-cap: Concave up expected cost $\E[C]$ on $[1,2]$. 
+#| fig-align: center
+
+from matplotlib import pyplot as plt
+import numpy as np
+
+a_range = np.linspace(1,2, 1000)
+cost_fn = lambda a: (2 * a**4 - 8 * a**3 + 24 * a**2 - 36 * a + 19)/12
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(a_range, cost_fn(a_range), label="cost")
+ax.scatter([float(sols[2])], cost_fn(float(sols[2])), color="red", s=20)
+ax.legend(loc="best")
+
+```
